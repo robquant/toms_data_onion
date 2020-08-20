@@ -4,23 +4,15 @@ import bitops
 proc decodeGroup(group: string): string =
     var res : string = ""
     var total: uint32 = 0
-    var m: uint32 = 1
-    total += (uint32(ord(group[4])) - 33) * m
-    m *= 85
-    total += (uint32(ord(group[3])) - 33) * m
-    m *= 85
-    total += (uint32(ord(group[2])) - 33) * m
-    m *= 85
-    total += (uint32(ord(group[1])) - 33) * m
-    m *= 85
-    total += (uint32(ord(group[0])) - 33) * m
+    for i in 0..4:
+        total = 85 * total + (uint32(ord(group[i])) - 33)
     res.add(char((total shr 24) and 255))
     res.add(char((total shr 16) and 255))
     res.add(char((total shr 8) and 255))
     res.add(char((total) and 255))
     return res
 
-proc ascii85decode(b: string): string = 
+proc ascii85decode(b: string): string =
     var i: int = 0
     var res: string = ""
     var decoded: string
@@ -40,7 +32,7 @@ proc ascii85decode(b: string): string =
         i += 5
     return res
 
-proc main() = 
+proc main() =
     let f = open("payload_layer1.txt")
     let content = replace(f.readAll, "\n", "")
     let decoded = ascii85decode(content[2..^3])
