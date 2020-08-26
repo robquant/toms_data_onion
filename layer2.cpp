@@ -89,6 +89,19 @@ int popcount(unsigned x)
     return c;
 }
 
+void extract(const char *src, char *dst)
+{
+    for (int i = 0; i < 8; i++)
+    {
+        uint16_t extract = *(src + i) & 0b11111110;
+        extract <<= i;
+        if (i >= 1)
+            dst[i - 1] |= (extract >> 8) & 0xFF;
+        if (i < 7)
+            dst[i] |= extract & 0xFF;
+    }
+}
+
 int main()
 {
     auto encoded = read_file("payload_layer2.txt");
@@ -102,5 +115,18 @@ int main()
         {
             popped.push_back(c);
         }
+    }
+    int i = 0;
+    int j = 0;
+    vector<char> target(7 * popped.size() / 8);
+    while (i < popped.size())
+    {
+        extract(&popped[i], &target[j]);
+        i += 8;
+        j += 7;
+    }
+    for (char c : target)
+    {
+        cout << c;
     }
 }
