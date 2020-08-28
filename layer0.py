@@ -1,36 +1,34 @@
 import sys
+from array import array
+import struct
 import base64
 
 
-def decode_group(group):
-    total = 0
-    res = []
-    for i in range(5):
-        total = 85 * total + (ord(group[i]) - 33)
-    res.append((total >> 24) & 255)
-    res.append((total >> 16) & 255)
-    res.append((total >> 8) & 255)
-    res.append(total & 255)
-    return res
-
-
 def a85decode(encoded: str):
-    res: bytes = []
+    res = array("I")
+    pad_length = 0
+    count = 0
+    total = 0
     i = 0
-    while i <= len(encoded):
+    while i < len(encoded):
         if encoded[i] == 'z':
-            res += [0, 0, 0, 0]
-            i += 1
-            continue
-        if i + 5 < len(encoded):
-            res += decode_group(encoded[i:i + 5])
+            res.append(0)
         else:
-            padded = list(encoded[i:])
-            pad_length = 5 - len(padded)
-            padded += ["u"] * pad_length
-            res += decode_group(padded)[:-pad_length]
-        i += 5
-    return bytes(res)
+            total = 85 * total + (ord(encoded[i]) - 33)
+            count += 1
+            if count == 5:
+                res.append(total)
+                total, count = 0, 0
+        i += 1
+
+    if count > 0:
+        pad_length = 5 - count
+        while count < 5:
+            count += 1
+            total = 85 * total + (ord("u") - 33)
+        res.append(total)
+    res.byteswap()
+    return res.tobytes()[:-pad_length]
 
 
 def main(argv=None):
