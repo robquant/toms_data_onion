@@ -1,4 +1,3 @@
-32
 ==[ Layer 4/6: Network Traffic ]============================
 
 When computers send data over a network like the internet,

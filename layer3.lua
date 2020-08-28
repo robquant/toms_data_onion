@@ -84,7 +84,6 @@ key = {}
 for i=0,31 do
     key[#key+1] = single[3489 + i]
 end
-print(#key)
 
 -- Decode
 for i=0,#decoded-1 do
