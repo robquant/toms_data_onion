@@ -9,25 +9,23 @@ def a85decode(encoded: str):
     pad_length = 0
     count = 0
     total = 0
-    i = 0
-    while i < len(encoded):
-        if encoded[i] == 'z':
+    for c in encoded:
+        if c == 'z':
             res.append(0)
         else:
-            total = 85 * total + (ord(encoded[i]) - 33)
+            total = 85 * total + (ord(c) - 33)
             count += 1
             if count == 5:
                 res.append(total)
                 total, count = 0, 0
-        i += 1
-
     if count > 0:
         pad_length = 5 - count
         while count < 5:
             count += 1
             total = 85 * total + (ord("u") - 33)
         res.append(total)
-    res.byteswap()
+    if sys.byteorder == 'little':
+        res.byteswap()
     return res.tobytes()[:-pad_length]
 
 
