@@ -19,7 +19,9 @@ proc ascii85decode(b: string): string =
             res.add(char((total) and 255))
             total = 0
             count = 0
-    return res[0..^(5 - count)]
+    if count < 4:
+        res = res[0..^(5-count)]
+    return res
 
 proc main() =
     let f = open("payload_layer1.txt")
