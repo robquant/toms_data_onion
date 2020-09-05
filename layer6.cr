@@ -31,22 +31,67 @@ class Tomtel69CPU
     pc : UInt32
     def initialize(program : Array(UInt8))
         @memory = program
-        @reg8 = {:a => 0, :b => 0, :c => 0, :d => 0, :e => 0, :f => 0} of Symbol => UInt8
-        @reg32 = {:la => 0, :lb => 0, :lc => 0, :ld => 0} of Symbol => UInt32
+        @reg8 = Array(UInt8).new(6, 0)
+        @reg32 = Array(UInt32).new(4, 0)
         @ptr = 0
         @pc = 0
     end
 
     def run()
         while true
-            case @memory[@pc]
-            when 0xC2
-                puts "ADD"
-            when 0xE1
-                puts "APTR"
+            val = @memory[@pc]
+            case 
+            when val == 0xC2
+                @reg8[0] += @reg8[1]
+            when val== 0xC3
+                a : Int16 = @reg8[0].to_i16 - @reg8[1].to_i16
+                if a < 0 
+                    a *= 256
+                end
+                b : UInt8 = a.to_u8
+            when val == 0xC4
+                @reg8[0] = @reg8[0] ^ @reg8[1]
+            when val == 0xE1
                 @pc += 1
-            when 0x01
+                @ptr += @memory[@pc]
+            when val == 0xC1
+                if @reg8[0] == @reg8[1]
+                    @reg8[5] = 0
+                else
+                    @reg8[5] = 1
+                end 
+            when val == 0x01
                 break
+            when val == 0x02
+                puts @reg8[0].chr
+            when val == 0x21
+                @pc += 1
+                if @reg8[5] == 0
+                    mem = Bytes.new(4)
+                    mem[0] = @memory[@pc]
+                    mem[1] = @memory[@pc + 1]
+                    mem[2] = @memory[@pc + 2]
+                    mem[3] = @memory[@pc + 3]
+                    pc = IO::ByteFormat::LittleEndian.decode(UInt32, mem)
+                else
+                    @pc += 4
+                end
+            when val == 0x22
+                @pc += 1
+                if @reg8[5] != 0
+                    mem = Bytes.new(4)
+                    mem[0] = @memory[@pc]
+                    mem[1] = @memory[@pc + 1]
+                    mem[2] = @memory[@pc + 2]
+                    mem[3] = @memory[@pc + 3]
+                    pc = IO::ByteFormat::LittleEndian.decode(UInt32, mem)
+                else
+                    @pc += 4
+                end
+            when val & 0b01000000 == 0b01000000
+                puts "MV"
+            when val & 0b10000000 == 0b10000000
+                puts "MV32"
             end
             @pc += 1
         end
